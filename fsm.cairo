@@ -1,4 +1,7 @@
 %lang starknet
+%builtins pedersen range_check bitwise
+
+from starkware.cairo.common.cairo_builtins import HashBuiltin
 
 struct Condition:
 end
@@ -23,7 +26,6 @@ end
 func states(name : felt) -> (state : State):
 end
 
-#use these name in states storage var
 @storage_var
 func init_state() -> (name : felt): 
 end
@@ -35,6 +37,16 @@ end
 @storage_var
 func transition(from_name : felt, to_name : felt, event : Action) -> (transition : Transition):
 end
+
+func add_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt, do_name : felt, exit_name : felt) -> ():
+    let entry = Action(name=entry_name, external=0)
+    let do = Action(name=do_name, external=0)
+    let exit = Action(name=exit_name, external=0)
+    let state = State(entry=entry, do=do, exit=exit)
+    states.write(name, state)
+    ret
+end
+
 
 
     # transition(currentState, event) {
