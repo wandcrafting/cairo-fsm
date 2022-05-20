@@ -8,16 +8,12 @@ end
 #event = action    -- could be action of other agents, part of dynamics of world
 
 struct State:
-    member start_bool : felt #1 if true
-    member final_bool : felt #1 if true
     member entry_action: Action
     member activity : Action
     member exit_action: Action
 end
 
 struct Transition:
-    member init_state : State
-    member final_state : State
     member action : Action
     member guard : Guard
 end
@@ -26,17 +22,16 @@ end
 func states(name : felt) -> (state : State):
 end
 
+#use these name in states storage var
 @storage_var
-func transition(init_state : State, final_state : State) -> (transition : Transition):
+func init_state() -> (name : felt): 
 end
 
-#struct machine
+@storage_var
+func final_state() -> (name : felt): 
+end
 
-#const Machine = machine(init: off)
-
-#machine.state
-
-#machine.transition(state, 'switch')
-
-#machine.transi
+@storage_var
+func transition(from_name : felt, to_name : felt) -> (transition : Transition):
+end
 
