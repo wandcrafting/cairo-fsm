@@ -1,21 +1,22 @@
 %lang starknet
 
-struct Guard:
+struct Condition:
 end
 
 struct Action:
+    member name : felt
+    member external : felt # if 1, this action is initiated by environment. if 0, this action is initiated by another agent.
 end
-#event = action    -- could be action of other agents, part of dynamics of world
 
 struct State:
-    member entry_action: Action
-    member activity : Action
-    member exit_action: Action
+    member entry: Action
+    member do : Action
+    member exit: Action
 end
 
 struct Transition:
     member action : Action
-    member guard : Guard
+    member condition : Condition
 end
 
 @storage_var
@@ -32,6 +33,20 @@ func final_state() -> (name : felt):
 end
 
 @storage_var
-func transition(from_name : felt, to_name : felt) -> (transition : Transition):
+func transition(from_name : felt, to_name : felt, event : Action) -> (transition : Transition):
 end
 
+
+    # transition(currentState, event) {
+    #   const currentStateDefinition = stateMachineDefinition[currentState]
+    #   const destinationTransition = currentStateDefinition.transitions[event]
+    #   if (!destinationTransition) {
+    #     return
+    #   }
+    #   const destinationState = destinationTransition.target
+    #   const destinationStateDefinition =
+    #     stateMachineDefinition[destinationState]
+
+    #   destinationTransition.action()
+    #   currentStateDefinition.actions.onExit()
+    #   destinationStateDefinition.actions.onEnter()
