@@ -2,7 +2,7 @@
 %builtins pedersen range_check
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import assert_not_zero
+from starkware.cairo.common.math import assert_not_zero, assert_not_equal
 
 struct Condition:
 end
@@ -50,7 +50,25 @@ end
 
 func set_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
     #%TODO: check if state exists for given name
+    # let (check) = states.read(name)
+    # with_attr error_message("Initial and Final states can't be the same."):
+    #     assert_not_zero(check)
+    # end
+    let (final) = final_state.read()
+    with_attr error_message("Initial and Final states can't be the same."):
+        assert_not_equal(name, final)
+    end
     init_state.write(name)
+    ret 
+end
+
+func set_final_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
+    #%TODO: check if state exists for given name
+    let (init) = init_state.read()
+    with_attr error_message("Initial and Final states can't be the same."):
+        assert_not_equal(name, init)
+    end
+    final_state.write(name)
     ret 
 end
 
