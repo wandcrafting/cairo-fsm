@@ -80,6 +80,8 @@ end
 func set_curr_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
     #%TODO: check if state exists for given name
     current_state.write(name)
+    let (_, do, _) = get_state_actions(name)
+    #TODO: emit that action event was executed
     ret 
 end
 
@@ -105,18 +107,18 @@ func get_transition_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
     ret
 end
 
-
+func execute_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action) -> ():
+    let (curr) = current_state.read()
+    if from_name == curr:
+        let (transition) = transitions.read(from_name, to_name, event)
+        #TODO: check that transition exists
+        let (_, _, exit) = get_state_actions(curr)
+        let (trans_action) = transition.action
+        let (entry, _, _) = get_state_actions(curr)
+        #TODO: emit that action events were executed
+        current_state.write(to_name)
+    ret
+end
 
 #TODO: funcs which result in bools based on conditions
-
-
-
-#   const currentStateDefinition = stateMachineDefinition[currentState]
-#   const destinationTransition = currentStateDefinition.transitions[event]
-#   const destinationState = destinationTransition.target
-#   const destinationStateDefinition =
-#     stateMachineDefinition[destinationState]
-
-#   destinationTransition.action()
-#   currentStateDefinition.actions.onExit()
-#   destinationStateDefinition.actions.onEnter()
+#TODO: use events for showing which actions are being executed
