@@ -1,7 +1,8 @@
 %lang starknet
-%builtins pedersen range_check bitwise
+%builtins pedersen range_check
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.math import assert_not_zero
 
 struct Condition:
 end
@@ -12,9 +13,9 @@ struct Action:
 end
 
 struct State:
-    member entry: Action
+    member entry : Action
     member do : Action
-    member exit: Action
+    member exit : Action
 end
 
 struct Transition:
@@ -45,6 +46,12 @@ func add_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
     let state = State(entry=entry, do=do, exit=exit)
     states.write(name, state)
     ret
+end
+
+func set_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
+    #%TODO: check if state exists for given name
+    init_state.write(name)
+    ret 
 end
 
 
