@@ -32,6 +32,10 @@ end
 func final_state() -> (name : felt): 
 end
 
+@storage_var
+func current_state() -> (name : felt): 
+end
+
 #event can be an external action (give a name, and external bool = 0), or entry/do/exit action, or a transition action
 @storage_var
 func transitions(from_name : felt, to_name : felt, event : Action) -> (transition : Transition):
@@ -57,6 +61,9 @@ func set_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_che
         assert_not_equal(name, final)
     end
     init_state.write(name)
+    if current_state.read() == 0:
+        current_state.write(name)
+    end
     ret 
 end
 
@@ -67,6 +74,12 @@ func set_final_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_ch
         assert_not_equal(name, init)
     end
     final_state.write(name)
+    ret 
+end
+
+func set_curr_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
+    #%TODO: check if state exists for given name
+    current_state.write(name)
     ret 
 end
 
@@ -94,20 +107,16 @@ end
 
 
 
-#func transition(from_name : felt, to_name : felt, event : Action) -> (transition : Transition):
+#TODO: funcs which result in bools based on conditions
 
 
 
-    # transition(currentState, event) {
-    #   const currentStateDefinition = stateMachineDefinition[currentState]
-    #   const destinationTransition = currentStateDefinition.transitions[event]
-    #   if (!destinationTransition) {
-    #     return
-    #   }
-    #   const destinationState = destinationTransition.target
-    #   const destinationStateDefinition =
-    #     stateMachineDefinition[destinationState]
+#   const currentStateDefinition = stateMachineDefinition[currentState]
+#   const destinationTransition = currentStateDefinition.transitions[event]
+#   const destinationState = destinationTransition.target
+#   const destinationStateDefinition =
+#     stateMachineDefinition[destinationState]
 
-    #   destinationTransition.action()
-    #   currentStateDefinition.actions.onExit()
-    #   destinationStateDefinition.actions.onEnter()
+#   destinationTransition.action()
+#   currentStateDefinition.actions.onExit()
+#   destinationStateDefinition.actions.onEnter()
