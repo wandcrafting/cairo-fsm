@@ -4,9 +4,6 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_not_zero, assert_not_equal
 
-struct Condition:
-end
-
 struct Action:
     member name : felt
     member external : felt # if 1, this action is initiated by environment. if 0, this action is initiated by another agent.
@@ -20,7 +17,7 @@ end
 
 struct Transition:
     member action : Action
-    member condition : Condition
+    member condition : felt # if 1, this transition is enabled. if 0, this transition is disabled.
 end
 
 @storage_var
@@ -35,8 +32,9 @@ end
 func final_state() -> (name : felt): 
 end
 
+#event can be an external action (give a name, and external bool = 0), or entry/do/exit action, or a transition action
 @storage_var
-func transition(from_name : felt, to_name : felt, event : Action) -> (transition : Transition):
+func transitions(from_name : felt, to_name : felt, event : Action) -> (transition : Transition):
 end
 
 func add_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt, do_name : felt, exit_name : felt) -> ():
@@ -71,6 +69,18 @@ func set_final_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_ch
     final_state.write(name)
     ret 
 end
+
+func add_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action, trans_action_name : felt, condition : felt) -> ():
+    #%TODO: check if state exists for from_name, to_name
+    let transition_action = Action(name=trans_action_name, external=0)
+    let transition = Transition(transition_action, condition)
+    transitions.write(from_name, to_name, event, transition)
+    ret
+end
+
+
+
+#func transition(from_name : felt, to_name : felt, event : Action) -> (transition : Transition):
 
 
 
