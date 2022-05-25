@@ -29,7 +29,7 @@ end
 ################################################################################
 
 @storage_var
-func states(name : felt) -> (state : State):
+func states (name : felt) -> (state : State):
 end
 
 @storage_var
@@ -123,7 +123,7 @@ func get_transition_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
     ret
 end
 
-func execute_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action) -> ():
+func execute_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action):
     let (curr) = current_state.read()
     if from_name == curr:
         let (transition) = transitions.read(from_name, to_name, event)
@@ -133,5 +133,6 @@ func execute_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
         let (entry, _, _) = get_state_actions(curr)
         #TODO: emit that action events were executed
         current_state.write(to_name)
+        end
     ret
 end
