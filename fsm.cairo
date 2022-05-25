@@ -4,6 +4,10 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_not_zero, assert_not_equal
 
+################################################################################
+# Types
+################################################################################
+
 struct Action:
     member name : felt
     member external : felt # if 1, this action is initiated by environment. if 0, this action is initiated by another agent.
@@ -19,6 +23,10 @@ struct Transition:
     member action : Action
     member condition : felt # if 1, this transition is enabled. if 0, this transition is disabled.
 end
+
+################################################################################
+# Storage Vars
+################################################################################
 
 @storage_var
 func states(name : felt) -> (state : State):
@@ -40,6 +48,10 @@ end
 @storage_var
 func transitions(from_name : felt, to_name : felt, event : Action) -> (transition : Transition):
 end
+
+################################################################################
+# Write to Storage Vars
+################################################################################
 
 func add_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt, do_name : felt, exit_name : felt) -> ():
     let entry = Action(name=entry_name, external=0)
@@ -93,6 +105,10 @@ func add_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_che
     ret
 end
 
+################################################################################
+# Read from Storage Vars
+################################################################################
+
 func get_state_actions {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (entry : Action, do : Action, exit : Action):
     let (state) = states.read(name)
     let entry = state.entry
@@ -119,6 +135,3 @@ func execute_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
         current_state.write(to_name)
     ret
 end
-
-#TODO: funcs which result in bools based on conditions
-#TODO: use events for showing which actions are being executed
