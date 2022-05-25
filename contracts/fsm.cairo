@@ -73,7 +73,8 @@ func set_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_che
         assert_not_equal(name, final)
     end
     init_state.write(name)
-    if current_state.read() == 0:
+    let (current) = current_state.read()
+    if current == 0:
         current_state.write(name)
     end
     ret 
@@ -129,9 +130,8 @@ func execute_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
         let (transition) = transitions.read(from_name, to_name, event)
         #TODO: check that transition exists
         let (_, _, exit) = get_state_actions(curr)
-        let (trans_action) = transition.action
         let (entry, _, _) = get_state_actions(curr)
-        #TODO: emit that action events were executed
+        #TODO: emit that action events were executed - exit, transition.action, entry
         current_state.write(to_name)
         end
     ret
