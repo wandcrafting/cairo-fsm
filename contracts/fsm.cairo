@@ -110,6 +110,18 @@ end
 # Read from Storage Vars
 ################################################################################
 
+func get_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (state : State):
+    let (name) = init_state.read()
+    let (state) = states.read(name)
+    ret
+end
+
+func get_final_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (state : State):
+    let (name) = final_state.read()
+    let (state) = states.read(name)
+    ret
+end
+
 func get_state_actions {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (entry : Action, do : Action, exit : Action):
     let (state) = states.read(name)
     let entry = state.entry
