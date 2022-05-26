@@ -29,11 +29,9 @@
 (defn home-page []
   (fn []
     [:span.main
-     [:h1 "Connecting to Starknet"]
+     [:h1 "Connecting to Starknet..."]
      [:ul
-      [:li [:a {:href (path-for :items)} "Items of client"]]]]))
-
-
+      [:li [:a {:href (path-for :items)} "Itemsss of client"]]]]))
 
 (defn items-page []
   (fn []

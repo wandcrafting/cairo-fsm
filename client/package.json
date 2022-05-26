@@ -1,6 +1,8 @@
 {
   "devDependencies": {
-    "shadow-cljs": "^2.19.0"
+    "shadow-cljs": "^2.19.0",
+    "webpack": "^5.72.1",
+    "webpack-cli": "^4.9.2"
   },
   "dependencies": {
     "@argent/get-starknet": "^3.5.0",
