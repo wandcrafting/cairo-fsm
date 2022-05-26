@@ -227,10 +227,19 @@ namespace get_actions:
         ret
     end
 
-    @view get_state_action_exit {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (exit : Action):
+    @view 
+    func get_state_action_exit {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (exit : Action):
         let (state) = states_storage.get_state(name)
         let exit = state.exit
         ret
+    end
+
+    @view
+    func get_transition_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action) -> (trans_act : Action):
+        states_internal.check_state_existence(from_name)
+        states_internal.check_state_existence(to_name)
+        let (trans) = transitions.read(from_name, to_name, event)
+        return (trans.action)
     end
 end
 
