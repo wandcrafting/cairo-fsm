@@ -53,10 +53,10 @@ end
 # Adding, Updating, Removing, and Reading States
 ################################################################################
 
-namespace state_access:
-
+namespace external_states:
+    @external
     func add_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt, do_name : felt, exit_name : felt) -> ():
-        #check that state doesn't already exist for this name
+        internal_states.check_state_non_existence(name)
         let entry = Action(name=entry_name, external=0)
         let do = Action(name=do_name, external=0)
         let exit = Action(name=exit_name, external=0)
@@ -65,8 +65,9 @@ namespace state_access:
         ret
     end
 
+    @external
     func update_state_entry {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt) -> ():
-        #check that state already exists for this name
+        internal_states.check_state_existence(name)
         let (actions) = states.read(name)
         let do = actions.do
         let exit = actions.exit
@@ -76,8 +77,9 @@ namespace state_access:
         ret
     end
 
+    @external
     func update_state_do {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, do_name : felt) -> ():
-        #check that state already exists for this name -- find state, go to its action and check the action name, it should be non-0
+        internal_states.check_state_existence(name)
         let (actions) = states.read(name)
         let entry = actions.entry
         let exit = actions.exit
@@ -87,8 +89,9 @@ namespace state_access:
         ret
     end
 
+    @external
     func update_state_exit {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, exit_name : felt) -> ():
-        #check that state already exists for this name
+        internal_states.check_state_existence(name)
         let (actions) = states.read(name)
         let entry = actions.entry
         let do = actions.do
@@ -98,8 +101,9 @@ namespace state_access:
         ret
     end
 
+    @external
     func remove_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
-        #check that state already exists for this name
+        internal_states.check_state_existence(name)
         let entry = Action(name=0, external=0)
         let do = Action(name=0, external=0)
         let exit = Action(name=0, external=0)
@@ -108,11 +112,30 @@ namespace state_access:
         ret
     end
 
+    @view
     func get_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (state : State):
+        internal_states.check_state_existence(name)
         let (state) = states.read(name)
         ret 
     end
+end
 
+namespace internal_states:
+    func check_state_non_existence {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
+        let (state) = states.read(name)
+        with_attr error_message("This state already exists"):
+            assert state.do.name = 0
+        end
+        ret
+    end
+
+    func check_state_existence {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
+        let (state) = states.read(name)
+        with_attr error_message("This state doesn't exist"):
+            assert_not_zero(state.do.name)
+        end
+        ret
+    end
 end
 
 
