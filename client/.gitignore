@@ -8,6 +8,11 @@ pom.xml.asc
 *.class
 /.lein-*
 /.nrepl-port
-/.prepl-port
-.hgignore
-.hg/
+/out
+/.repl
+*.log
+/.env
+/.sass-cache
+/node_modules
+/.shadow-cljs/
+/resources/public/js/
