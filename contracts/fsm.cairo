@@ -54,6 +54,7 @@ end
 ################################################################################
 
 func add_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt, do_name : felt, exit_name : felt) -> ():
+    #check that state doesn't already exist for this name
     let entry = Action(name=entry_name, external=0)
     let do = Action(name=do_name, external=0)
     let exit = Action(name=exit_name, external=0)
@@ -61,6 +62,48 @@ func add_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
     states.write(name, state)
     ret
 end
+
+func update_state_entry {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt) -> ():
+     #check that state already exists for this name
+    let (actions) = states.read(name)
+    let do = actions.do
+    let exit = actions.exit
+    let entry = Action(name=entry_name, external=0)
+    let state = State(entry=entry, do=do, exit=exit)
+    states.write(name, state)
+    ret
+end
+
+func update_state_do {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, do_name : felt) -> ():
+     #check that state already exists for this name
+    let (actions) = states.read(name)
+    let entry = actions.entry
+    let exit = actions.exit
+    let do = Action(name=do_name, external=0)
+    let state = State(entry=entry, do=do, exit=exit)
+    states.write(name, state)
+    ret
+end
+
+func update_state_exit {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, exit_name : felt) -> ():
+     #check that state already exists for this name
+    let (actions) = states.read(name)
+    let entry = actions.entry
+    let do = actions.do
+    let exit = Action(name=exit_name, external=0)
+    let state = State(entry=entry, do=do, exit=exit)
+    states.write(name, state)
+    ret
+end
+
+func remove_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
+    let (state) = states.read(name)
+
+    ret
+end
+
+
+
 
 func set_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
     #%TODO: check if state exists for given name
@@ -121,6 +164,14 @@ func get_final_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_ch
     let (state) = states.read(name)
     ret
 end
+
+func get_current_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (state : State):
+    let (name) = current_state.read()
+    let (state) = states.read(name)
+    ret
+end
+
+
 
 func get_state_actions {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (entry : Action, do : Action, exit : Action):
     let (state) = states.read(name)
