@@ -33,6 +33,10 @@ func states (name : felt) -> (state : State):
 end
 
 @storage_var
+func states_inc() -> (name : felt):
+end
+
+@storage_var
 func init_state() -> (name : felt): 
 end
 
@@ -48,6 +52,10 @@ end
 func actions(name : felt) -> (action : Action):
 end
 
+@storage_var
+func actions_inc() -> (name : felt):
+end
+
 #event can be an external action (give a name, and external bool = 0), or entry/do/exit action, or a transition action
 @storage_var
 func transitions(from_name : felt, to_name : felt, event : Action) -> (transition : Transition):
@@ -56,11 +64,55 @@ end
 ################################################################################
 # Functions
 ################################################################################
+@constructor
+func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+    states_inc.write(1)
+    actions_inc.write(1)
+    ret
+end
+
+namespace actions_storage:
+    @external
+    func add_internal_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt):
+        let (curr) = actions_inc.read()
+        assert_not_zero(name)
+        actions.write(curr, Action(name, 0))
+        actions_inc.write(curr + 1)
+        ret
+    end
+
+    @external
+    func add_external_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt):
+        let (curr) = actions_inc.read()
+        assert_not_zero(name)
+        actions.write(curr, Action(name, 1))
+        actions_inc.write(curr + 1)
+        ret
+    end
+
+    @external
+    func update_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, external : felt):
+        internal_utils.check_action_existence(name)
+        let (curr) = actions_inc.read()
+        actions.write(curr, Action(name, external))
+        ret
+    end
+
+
+
+
+
+    @external
+    func get_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (action : Action):
+        let (action) = actions.read(name)
+        ret
+    end
+end
 
 namespace states_storage:
     @external
     func add_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt, do_name : felt, exit_name : felt) -> ():
-        states_internal.check_state_non_existence(name)
+        internal_utils.check_state_non_existence(name)
         assert_not_zero(name)
         let entry = Action(name=entry_name, external=0)
         let do = Action(name=do_name, external=0)
@@ -72,7 +124,7 @@ namespace states_storage:
 
     @external
     func update_state_entry {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt) -> ():
-        states_internal.check_state_existence(name)
+        internal_utils.check_state_existence(name)
         let (actions) = states.read(name)
         let do = actions.do
         let exit = actions.exit
@@ -84,7 +136,7 @@ namespace states_storage:
 
     @external
     func update_state_do {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, do_name : felt) -> ():
-        states_internal.check_state_existence(name)
+        internal_utils.check_state_existence(name)
         let (actions) = states.read(name)
         let entry = actions.entry
         let exit = actions.exit
@@ -96,7 +148,7 @@ namespace states_storage:
 
     @external
     func update_state_exit {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, exit_name : felt) -> ():
-        states_internal.check_state_existence(name)
+        internal_utils.check_state_existence(name)
         let (actions) = states.read(name)
         let entry = actions.entry
         let do = actions.do
@@ -108,7 +160,7 @@ namespace states_storage:
 
     @external
     func remove_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
-        states_internal.check_state_existence(name)
+        internal_utils.check_state_existence(name)
         let entry = Action(name=0, external=0)
         let do = Action(name=0, external=0)
         let exit = Action(name=0, external=0)
@@ -119,13 +171,13 @@ namespace states_storage:
 
     @view
     func get_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (state : State):
-        states_internal.check_state_existence(name)
+        internal_utils.check_state_existence(name)
         let (state) = states.read(name)
         ret 
     end
 end
 
-namespace states_internal:
+namespace internal_utils:
     func check_state_non_existence {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
         let (state) = states.read(name)
         with_attr error_message("This state already exists"):
@@ -157,13 +209,21 @@ namespace states_internal:
         end
         ret
     end
+
+    func check_action_existence {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
+        let (action) = actions.read(name)
+        with_attr error_message("This action doesn't exist"):
+            assert_not_zero(action.name)
+        end
+        ret
+    end
 end
 
 namespace states_config:
     @external
     func set_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
-        states_internal.check_state_existence(name)
-        states_internal.check_init_not_final(name)
+        internal_utils.check_state_existence(name)
+        internal_utils.check_init_not_final(name)
         init_state.write(name)
 
         let (current) = current_state.read()
@@ -175,15 +235,15 @@ namespace states_config:
 
     @external
     func set_final_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
-        states_internal.check_state_existence(name)
-        states_internal.check_final_not_init(name)
+        internal_utils.check_state_existence(name)
+        internal_utils.check_final_not_init(name)
         final_state.write(name)
         ret 
     end
 
     @external
     func set_curr_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
-        states_internal.check_state_existence(name)
+        internal_utils.check_state_existence(name)
         current_state.write(name)        
         ret 
     end
@@ -240,8 +300,8 @@ namespace get_actions:
 
     @view
     func get_transition_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action) -> (trans_act : Action):
-        states_internal.check_state_existence(from_name)
-        states_internal.check_state_existence(to_name)
+        internal_utils.check_state_existence(from_name)
+        internal_utils.check_state_existence(to_name)
         let (trans) = transitions.read(from_name, to_name, event)
         return (trans.action)
     end
@@ -250,8 +310,8 @@ end
 namespace transition_storage:
     @external
     func add_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action, trans_action_name : felt, condition : felt) -> ():
-        states_internal.check_state_existence(from_name)
-        states_internal.check_state_existence(to_name)
+        internal_utils.check_state_existence(from_name)
+        internal_utils.check_state_existence(to_name)
         
         let transition_action = Action(name=trans_action_name, external=0)
         let transition = Transition(transition_action, condition)
@@ -269,6 +329,7 @@ end
 
 #figure out conditions/guards
 #refactor actions
+#the action, state inc storage vars shouldn't be implemented in the library  
 
 
 
@@ -276,12 +337,6 @@ end
 
 
 
-
-func get_transition_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action) -> (action : Action):
-    let (transition) = transitions.read(from_name, to_name, event)
-    let action = transition.action
-    ret
-end
 
 
 
