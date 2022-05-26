@@ -1,1 +1,137 @@
-[]
+[
+    {
+        "members": [
+            {
+                "name": "entry",
+                "offset": 0,
+                "type": "Action"
+            },
+            {
+                "name": "do",
+                "offset": 2,
+                "type": "Action"
+            },
+            {
+                "name": "exit",
+                "offset": 4,
+                "type": "Action"
+            }
+        ],
+        "name": "State",
+        "size": 6,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "name",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "external",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Action",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "inputs": [
+            {
+                "name": "name",
+                "type": "felt"
+            },
+            {
+                "name": "entry_name",
+                "type": "felt"
+            },
+            {
+                "name": "do_name",
+                "type": "felt"
+            },
+            {
+                "name": "exit_name",
+                "type": "felt"
+            }
+        ],
+        "name": "add_state",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "name",
+                "type": "felt"
+            },
+            {
+                "name": "entry_name",
+                "type": "felt"
+            }
+        ],
+        "name": "update_state_entry",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "name",
+                "type": "felt"
+            },
+            {
+                "name": "do_name",
+                "type": "felt"
+            }
+        ],
+        "name": "update_state_do",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "name",
+                "type": "felt"
+            },
+            {
+                "name": "exit_name",
+                "type": "felt"
+            }
+        ],
+        "name": "update_state_exit",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "name",
+                "type": "felt"
+            }
+        ],
+        "name": "remove_state",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "name",
+                "type": "felt"
+            }
+        ],
+        "name": "get_state",
+        "outputs": [
+            {
+                "name": "state",
+                "type": "State"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
