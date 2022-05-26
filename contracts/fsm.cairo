@@ -206,19 +206,11 @@ namespace states_config:
     end
 end
 
-
-
-
 namespace get_actions:
-    #get current_actions-do
     @view
     func get_current_do {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (do_action : Action):
-        let (bob) = states_config.get_curr_state()
-
-        # let (current) = current_state.read()
-        # let (state) = states.read(current)
-        # let (do_action) = state.do
-        ret 
+        let (curr) = states_config.get_curr_state()
+        return (curr.do)
     end
 
 end
@@ -226,7 +218,6 @@ end
 
 
 
-#let (_, do, _) = get_state_actions(name)
 
 func add_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action, trans_action_name : felt, condition : felt) -> ():
     #%TODO: check if state exists for from_name, to_name
@@ -236,27 +227,6 @@ func add_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_che
     ret
 end
 
-################################################################################
-# Read from Storage Vars
-################################################################################
-
-func get_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (state : State):
-    let (name) = init_state.read()
-    let (state) = states.read(name)
-    ret
-end
-
-func get_final_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (state : State):
-    let (name) = final_state.read()
-    let (state) = states.read(name)
-    ret
-end
-
-func get_current_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (state : State):
-    let (name) = current_state.read()
-    let (state) = states.read(name)
-    ret
-end
 
 
 
