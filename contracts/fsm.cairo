@@ -91,10 +91,12 @@ namespace actions_storage:
     end
 
     @external
-    func update_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, external : felt):
+    func update_action_name {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, action_name : felt):
         internal_utils.check_action_existence(name)
-        let (curr) = actions_inc.read()
-        actions.write(curr, Action(name, external))
+        assert_not_zero(action_name)
+
+        let (action) = actions.read(name)
+        action.write(action_name, action.external)
         ret
     end
 
