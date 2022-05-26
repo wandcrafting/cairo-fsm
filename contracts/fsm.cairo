@@ -136,53 +136,59 @@ namespace states_internal:
         end
         ret
     end
+
+    func check_init_not_final {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
+        let (final) = final_state.read()
+        with_attr error_message("Initial and Final states can't be the same."):
+            assert_not_equal(name, final)
+        end
+        ret
+    end
 end
 
-namespace external_configure_states:
+namespace states_config:
+    @external
+    func set_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
+        states_internal.check_state_existence(name)
+        states_internal.check_init_not_final(name)
 
-
-
-
-
-
-
-
-
-func set_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
-    #%TODO: check if state exists for given name
-    # let (check) = states.read(name)
-    # with_attr error_message("Initial and Final states can't be the same."):
-    #     assert_not_zero(check)
-    # end
-    let (final) = final_state.read()
-    with_attr error_message("Initial and Final states can't be the same."):
-        assert_not_equal(name, final)
+        init_state.write(name)
+        let (current) = current_state.read()
+        if current == 0:
+            current_state.write(name)
+        end
+        ret 
     end
-    init_state.write(name)
-    let (current) = current_state.read()
-    if current == 0:
+
+    @external
+    func set_final_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
+        #%TODO: check if state exists for given name
+        let (init) = init_state.read()
+        with_attr error_message("Initial and Final states can't be the same."):
+            assert_not_equal(name, init)
+        end
+        final_state.write(name)
+        ret 
+    end
+
+    @external
+    func set_curr_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
+        #%TODO: check if state exists for given name
         current_state.write(name)
+        let (_, do, _) = get_state_actions(name)
+        #TODO: emit that action event was executed
+        ret 
     end
-    ret 
 end
 
-func set_final_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
-    #%TODO: check if state exists for given name
-    let (init) = init_state.read()
-    with_attr error_message("Initial and Final states can't be the same."):
-        assert_not_equal(name, init)
-    end
-    final_state.write(name)
-    ret 
-end
 
-func set_curr_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
-    #%TODO: check if state exists for given name
-    current_state.write(name)
-    let (_, do, _) = get_state_actions(name)
-    #TODO: emit that action event was executed
-    ret 
-end
+
+
+
+
+
+
+
 
 func add_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action, trans_action_name : felt, condition : felt) -> ():
     #%TODO: check if state exists for from_name, to_name
