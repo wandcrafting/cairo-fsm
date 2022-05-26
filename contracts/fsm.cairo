@@ -214,29 +214,51 @@ namespace get_actions:
     end
 
     @view
-    func get_state_actions {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (entry : Action, do : Action, exit : Action):
+    func get_state_action_entry {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (entry : Action):
         let (state) = states_storage.get_state(name)
         let entry = state.entry
-        let do = state.do
-        let exit = state.exit
         ret
     end
 
+    @view
+    func get_state_action_do {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (do_action : Action):
+        let (state) = states_storage.get_state(name)
+        let do_action = state.do
+        ret
+    end
+
+    @view get_state_action_exit {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (exit : Action):
+        let (state) = states_storage.get_state(name)
+        let exit = state.exit
+        ret
+    end
+end
+
+namespace transition_storage:
+    @external
+    func add_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action, trans_action_name : felt, condition : felt) -> ():
+        states_internal.check_state_existence(from_name)
+        states_internal.check_state_existence(to_name)
+        
+        let transition_action = Action(name=trans_action_name, external=0)
+        let transition = Transition(transition_action, condition)
+        transitions.write(from_name, to_name, event, transition)
+        ret
+    end
+
+    #add
+    #update
+    #remove
+    #get
 end
 
 
 
+#figure out conditions/guards
+#refactor actions
 
 
 
-
-func add_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action, trans_action_name : felt, condition : felt) -> ():
-    #%TODO: check if state exists for from_name, to_name
-    let transition_action = Action(name=trans_action_name, external=0)
-    let transition = Transition(transition_action, condition)
-    transitions.write(from_name, to_name, event, transition)
-    ret
-end
 
 
 
