@@ -44,6 +44,10 @@ end
 func current_state() -> (name : felt): 
 end
 
+@storage_var
+func actions(name : felt) -> (action : Action):
+end
+
 #event can be an external action (give a name, and external bool = 0), or entry/do/exit action, or a transition action
 @storage_var
 func transitions(from_name : felt, to_name : felt, event : Action) -> (transition : Transition):
