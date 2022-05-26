@@ -57,6 +57,7 @@ namespace states_storage:
     @external
     func add_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt, do_name : felt, exit_name : felt) -> ():
         states_internal.check_state_non_existence(name)
+        assert_not_zero(name)
         let entry = Action(name=entry_name, external=0)
         let do = Action(name=do_name, external=0)
         let exit = Action(name=exit_name, external=0)
@@ -144,6 +145,14 @@ namespace states_internal:
         end
         ret
     end
+
+    func check_final_not_init {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
+        let (init) = init_state.read()
+        with_attr error_message("Initial and Final states can't be the same."):
+            assert_not_equal(name, init)
+        end
+        ret
+    end
 end
 
 namespace states_config:
@@ -151,22 +160,19 @@ namespace states_config:
     func set_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
         states_internal.check_state_existence(name)
         states_internal.check_init_not_final(name)
-
         init_state.write(name)
+
         let (current) = current_state.read()
         if current == 0:
-            current_state.write(name)
+            set_curr_state(name)
         end
         ret 
     end
 
     @external
     func set_final_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
-        #%TODO: check if state exists for given name
-        let (init) = init_state.read()
-        with_attr error_message("Initial and Final states can't be the same."):
-            assert_not_equal(name, init)
-        end
+        states_internal.check_state_existence(name)
+        states_internal.check_final_not_init(name)
         final_state.write(name)
         ret 
     end
