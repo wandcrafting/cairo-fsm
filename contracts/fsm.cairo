@@ -50,57 +50,79 @@ func transitions(from_name : felt, to_name : felt, event : Action) -> (transitio
 end
 
 ################################################################################
-# Write to Storage Vars
+# Adding, Updating, Removing, and Reading States
 ################################################################################
 
-func add_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt, do_name : felt, exit_name : felt) -> ():
-    #check that state doesn't already exist for this name
-    let entry = Action(name=entry_name, external=0)
-    let do = Action(name=do_name, external=0)
-    let exit = Action(name=exit_name, external=0)
-    let state = State(entry=entry, do=do, exit=exit)
-    states.write(name, state)
-    ret
+namespace state_access:
+
+    func add_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt, do_name : felt, exit_name : felt) -> ():
+        #check that state doesn't already exist for this name
+        let entry = Action(name=entry_name, external=0)
+        let do = Action(name=do_name, external=0)
+        let exit = Action(name=exit_name, external=0)
+        let state = State(entry=entry, do=do, exit=exit)
+        states.write(name, state)
+        ret
+    end
+
+    func update_state_entry {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt) -> ():
+        #check that state already exists for this name
+        let (actions) = states.read(name)
+        let do = actions.do
+        let exit = actions.exit
+        let entry = Action(name=entry_name, external=0)
+        let state = State(entry=entry, do=do, exit=exit)
+        states.write(name, state)
+        ret
+    end
+
+    func update_state_do {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, do_name : felt) -> ():
+        #check that state already exists for this name -- find state, go to its action and check the action name, it should be non-0
+        let (actions) = states.read(name)
+        let entry = actions.entry
+        let exit = actions.exit
+        let do = Action(name=do_name, external=0)
+        let state = State(entry=entry, do=do, exit=exit)
+        states.write(name, state)
+        ret
+    end
+
+    func update_state_exit {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, exit_name : felt) -> ():
+        #check that state already exists for this name
+        let (actions) = states.read(name)
+        let entry = actions.entry
+        let do = actions.do
+        let exit = Action(name=exit_name, external=0)
+        let state = State(entry=entry, do=do, exit=exit)
+        states.write(name, state)
+        ret
+    end
+
+    func remove_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
+        #check that state already exists for this name
+        let entry = Action(name=0, external=0)
+        let do = Action(name=0, external=0)
+        let exit = Action(name=0, external=0)
+        let state = State(entry=entry, do=do, exit=exit)
+        states.write(name, state)
+        ret
+    end
+
+    func get_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (state : State):
+        let (state) = states.read(name)
+        ret 
+    end
+
 end
 
-func update_state_entry {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt) -> ():
-     #check that state already exists for this name
-    let (actions) = states.read(name)
-    let do = actions.do
-    let exit = actions.exit
-    let entry = Action(name=entry_name, external=0)
-    let state = State(entry=entry, do=do, exit=exit)
-    states.write(name, state)
-    ret
-end
 
-func update_state_do {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, do_name : felt) -> ():
-     #check that state already exists for this name
-    let (actions) = states.read(name)
-    let entry = actions.entry
-    let exit = actions.exit
-    let do = Action(name=do_name, external=0)
-    let state = State(entry=entry, do=do, exit=exit)
-    states.write(name, state)
-    ret
-end
 
-func update_state_exit {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, exit_name : felt) -> ():
-     #check that state already exists for this name
-    let (actions) = states.read(name)
-    let entry = actions.entry
-    let do = actions.do
-    let exit = Action(name=exit_name, external=0)
-    let state = State(entry=entry, do=do, exit=exit)
-    states.write(name, state)
-    ret
-end
 
-func remove_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
-    let (state) = states.read(name)
 
-    ret
-end
+
+
+
+
 
 
 
