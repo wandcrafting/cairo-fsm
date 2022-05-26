@@ -213,7 +213,18 @@ namespace get_actions:
         return (curr.do)
     end
 
+    @view
+    func get_state_actions {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (entry : Action, do : Action, exit : Action):
+        let (state) = states_storage.get_state(name)
+        let entry = state.entry
+        let do = state.do
+        let exit = state.exit
+        ret
+    end
+
 end
+
+
 
 
 
@@ -230,19 +241,17 @@ end
 
 
 
-func get_state_actions {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (entry : Action, do : Action, exit : Action):
-    let (state) = states.read(name)
-    let entry = state.entry
-    let do = state.do
-    let exit = state.exit
-    ret
-end
 
 func get_transition_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action) -> (action : Action):
     let (transition) = transitions.read(from_name, to_name, event)
     let action = transition.action
     ret
 end
+
+
+
+
+
 
 func execute_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action):
     let (curr) = current_state.read()
