@@ -1,0 +1,2 @@
+0x050cc168cfca9f4793130998c6c003db78a5a8e01626778ecf2bf41ee591fca5:artifacts/abis/contract.json:my_contract
+0x00455639cdde71cd104d48fef900e12787e0a269e6a9084e9c0488cbd43fcef0:artifacts/abis/fsm.json:test_fsm
