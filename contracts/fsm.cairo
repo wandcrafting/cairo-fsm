@@ -185,23 +185,27 @@ namespace states_config:
     end
 
     @view
-    func get_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (init : felt):
-        let (init) = init_state.read()
+    func get_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+        let (name) = init_state.read()
+        states_storage.get_state(name)
         ret 
     end
 
     @view
-    func get_final_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (final : felt):
-        let (final) = final_state.read()
+    func get_final_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+        let (name) = final_state.read()
+        states_storage.get_state(name)
         ret 
     end
 
     @view
-    func get_curr_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (curr : felt):
-        let (curr) = current_state.read()
+    func get_curr_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+        let (name) = current_state.read()
+        states_storage.get_state(name)
         ret 
     end
 end
+
 
 namespace get_actions:
     #get current_actions-do
