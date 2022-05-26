@@ -179,22 +179,46 @@ namespace states_config:
 
     @external
     func set_curr_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
-        #%TODO: check if state exists for given name
-        current_state.write(name)
-        let (_, do, _) = get_state_actions(name)
-        #TODO: emit that action event was executed
+        states_internal.check_state_existence(name)
+        current_state.write(name)        
         ret 
     end
+
+    @view
+    func get_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (init : felt):
+        let (init) = init_state.read()
+        ret 
+    end
+
+    @view
+    func get_final_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (final : felt):
+        let (final) = final_state.read()
+        ret 
+    end
+
+    @view
+    func get_curr_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (curr : felt):
+        let (curr) = current_state.read()
+        ret 
+    end
+end
+
+namespace get_actions:
+    #get current_actions-do
+    @view
+    func get_current_do {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (do_action : Action):
+        let (current) = current_state.read()
+        let (state) = states.read(current)
+        let (do_action) = state.do
+        ret 
+    end
+
 end
 
 
 
 
-
-
-
-
-
+#let (_, do, _) = get_state_actions(name)
 
 func add_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action, trans_action_name : felt, condition : felt) -> ():
     #%TODO: check if state exists for from_name, to_name
