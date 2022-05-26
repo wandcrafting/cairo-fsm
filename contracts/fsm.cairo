@@ -185,35 +185,39 @@ namespace states_config:
     end
 
     @view
-    func get_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+    func get_init_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (init : State):
         let (name) = init_state.read()
-        states_storage.get_state(name)
+        let (init) = states_storage.get_state(name)
         ret 
     end
 
     @view
-    func get_final_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+    func get_final_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (final : State):
         let (name) = final_state.read()
-        states_storage.get_state(name)
+        let (final) = states_storage.get_state(name)
         ret 
     end
 
     @view
-    func get_curr_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+    func get_curr_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (curr : State):
         let (name) = current_state.read()
-        states_storage.get_state(name)
+        let (curr) = states_storage.get_state(name)
         ret 
     end
 end
+
+
 
 
 namespace get_actions:
     #get current_actions-do
     @view
     func get_current_do {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (do_action : Action):
-        let (current) = current_state.read()
-        let (state) = states.read(current)
-        let (do_action) = state.do
+        let (bob) = states_config.get_curr_state()
+
+        # let (current) = current_state.read()
+        # let (state) = states.read(current)
+        # let (do_action) = state.do
         ret 
     end
 
