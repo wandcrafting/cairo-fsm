@@ -119,7 +119,7 @@ namespace states_storage:
     func add_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(entry_name : felt, do_name : felt, exit_name : felt) -> ():
         alloc_locals
         let (local curr) = states_inc.read()
-        
+
         internal_utils.check_action_existence(entry_name)
         internal_utils.check_action_existence(do_name)
         internal_utils.check_action_existence(exit_name)
@@ -176,10 +176,7 @@ namespace states_storage:
     @external
     func remove_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
         internal_utils.check_state_existence(name)
-        let entry = Action(name=0, external=0)
-        let do = Action(name=0, external=0)
-        let exit = Action(name=0, external=0)
-        let state = State(entry=entry, do=do, exit=exit)
+        let state = State(entry=0, do=0, exit=0)
         states.write(name, state)
         ret
     end
@@ -204,9 +201,8 @@ namespace internal_utils:
 
     func check_state_existence {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
         let (state) = states.read(name)
-        let (do_action) = actions_storage.get_action(state.do)
         with_attr error_message("This state doesn't exist"):
-            assert_not_zero(do_action)
+            assert_not_zero(state.do)
         end
         ret
     end
@@ -255,10 +251,11 @@ namespace internal_utils:
     end
 
     func check_from_is_curr {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_state : felt):
-        let (curr) = states_config.get_curr_state()
+        let (curr) = current_state.read()
         with_attr error_message("curr is not from_state"):
             assert curr = from_state
         end
+        ret
     end
 end
 
@@ -317,8 +314,7 @@ namespace get_actions:
     @view
     func get_current_do {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (do_action : Action):
         let (curr) = states_config.get_curr_state()
-        let (curr_state) = states_storage.get_state(curr)
-        let (do_action) = actions_storage.get_action(curr_state.do)
+        let (do_action) = actions_storage.get_action(curr.do)
         ret
     end
 
