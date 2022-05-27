@@ -96,13 +96,16 @@ namespace actions_storage:
         assert_not_zero(action_name)
 
         let (action) = actions.read(name)
-        action.write(action_name, action.external)
+        actions.write(name, Action(action_name, action.external))
         ret
     end
 
-
-
-
+    @external
+    func delete_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt):
+        internal_utils.check_action_existence(name)
+        actions.write(name, Action(0, 0))
+        ret
+    end
 
     @external
     func get_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (action : Action):
