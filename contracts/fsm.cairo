@@ -136,10 +136,14 @@ namespace states_storage:
     @external
     func update_state_entry {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt) -> ():
         internal_utils.check_state_existence(name)
+        internal_utils.check_action_existence(entry_name)
+
         let (actions) = states.read(name)
         let do = actions.do
         let exit = actions.exit
-        let entry = Action(name=entry_name, external=0)
+
+        let (entry) = actions.read(entry_name)
+
         let state = State(entry=entry, do=do, exit=exit)
         states.write(name, state)
         ret
@@ -148,10 +152,14 @@ namespace states_storage:
     @external
     func update_state_do {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, do_name : felt) -> ():
         internal_utils.check_state_existence(name)
+        internal_utils.check_action_existence(do_name)
+
         let (actions) = states.read(name)
         let entry = actions.entry
         let exit = actions.exit
-        let do = Action(name=do_name, external=0)
+
+        let (do) = actions.read(do_name)
+
         let state = State(entry=entry, do=do, exit=exit)
         states.write(name, state)
         ret
@@ -160,10 +168,14 @@ namespace states_storage:
     @external
     func update_state_exit {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, exit_name : felt) -> ():
         internal_utils.check_state_existence(name)
+        internal_utils.check_action_existence(exit_name)
+        
         let (actions) = states.read(name)
         let entry = actions.entry
         let do = actions.do
-        let exit = Action(name=exit_name, external=0)
+
+        let (exit) = actions.read(exit_name)
+
         let state = State(entry=entry, do=do, exit=exit)
         states.write(name, state)
         ret
