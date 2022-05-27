@@ -11,3 +11,6 @@ Many things will change after info-structure DSL:
 however, actions themselves are supposed to be nodes too
 
 we want elegant hfsm - state machines within states
+
+<img width="454" alt="image" src="https://user-images.githubusercontent.com/25142786/170613921-e6ddefbe-8c58-4312-be10-372790edc861.png">
+
