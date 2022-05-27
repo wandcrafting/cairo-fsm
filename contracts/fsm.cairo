@@ -238,6 +238,17 @@ namespace internal_utils:
         end
         ret
     end
+
+    func check_transition_existence {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : felt):
+        check_state_existence(from_name)
+        check_state_existence(to_name)
+        check_action_existence(event)
+        let (trans) = transitions.read(from_name, to_name, event)
+        with_attr error_message("This transition doesn't exist"):
+            assert_not_zero(trans.action)
+        end
+        ret
+    end
 end
 
 namespace states_config:
@@ -323,8 +334,7 @@ namespace get_actions:
 
     @view
     func get_transition_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : felt) -> (trans_act : Action):
-        internal_utils.check_state_existence(from_name)
-        internal_utils.check_state_existence(to_name)
+        internal_utils.check_transition_existence(from_name, to_name, event)
         let (trans) = transitions.read(from_name, to_name, event)
         let (trans_act) = actions_storage.get_action(trans.action)
         ret
@@ -333,27 +343,29 @@ end
 
 namespace transition_storage:
     @external
-    func add_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action, trans_action_name : felt, condition : felt) -> ():
+    func add_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : felt, trans_action : felt, condition : felt) -> ():
         internal_utils.check_state_existence(from_name)
         internal_utils.check_state_existence(to_name)
+        internal_utils.check_action_existence(event)
+        internal_utils.check_action_existence(trans_action)
         
-        let transition_action = Action(name=trans_action_name, external=0)
-        let transition = Transition(transition_action, condition)
+        let transition = Transition(trans_action, condition)
         transitions.write(from_name, to_name, event, transition)
         ret
     end
 
-    #add
-    #update
-    #remove
-    #get
+    @external
+    func remove_transaction {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : felt):
+        internal_utils.check_transition_existence(from_name, to_name, event)
+        let transition = Transition(0, 0) 
+        transitions.write(from_name, to_name, event, transition)
+        ret
+    end
 end
 
 
 
 #figure out conditions/guards
-#refactor actions
-#the action, state inc storage vars shouldn't be implemented in the library  
 
 
 
