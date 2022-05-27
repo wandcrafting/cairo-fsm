@@ -295,36 +295,39 @@ namespace get_actions:
     @view
     func get_current_do {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (do_action : Action):
         let (curr) = states_config.get_curr_state()
-        return (curr.do)
+        let (curr_state) = states_storage.get_state(curr)
+        let (do_action) = actions_storage.get_action(curr_state.do)
+        ret
     end
 
     @view
     func get_state_action_entry {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (entry : Action):
         let (state) = states_storage.get_state(name)
-        let entry = state.entry
+        let (entry) = actions_storage.get_action(state.entry)
         ret
     end
 
     @view
     func get_state_action_do {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (do_action : Action):
         let (state) = states_storage.get_state(name)
-        let do_action = state.do
+        let (do_action) = actions_storage.get_action(state.do)
         ret
     end
 
     @view 
     func get_state_action_exit {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> (exit : Action):
         let (state) = states_storage.get_state(name)
-        let exit = state.exit
+        let (exit) = actions_storage.get_action(state.exit)
         ret
     end
 
     @view
-    func get_transition_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action) -> (trans_act : Action):
+    func get_transition_action {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : felt) -> (trans_act : Action):
         internal_utils.check_state_existence(from_name)
         internal_utils.check_state_existence(to_name)
         let (trans) = transitions.read(from_name, to_name, event)
-        return (trans.action)
+        let (trans_act) = actions_storage.get_action(trans.action)
+        ret
     end
 end
 
