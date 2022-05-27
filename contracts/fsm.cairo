@@ -116,14 +116,20 @@ end
 
 namespace states_storage:
     @external
-    func add_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt, entry_name : felt, do_name : felt, exit_name : felt) -> ():
-        internal_utils.check_state_non_existence(name)
-        assert_not_zero(name)
-        let entry = Action(name=entry_name, external=0)
-        let do = Action(name=do_name, external=0)
-        let exit = Action(name=exit_name, external=0)
+    func add_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(entry_name : felt, do_name : felt, exit_name : felt) -> ():
+        let (curr) = states_inc.read()
+        internal_utils.check_action_existence(entry_name)
+        internal_utils.check_action_existence(do_name)
+        internal_utils.check_action_existence(exit_name)
+
+        let (entry) = actions.read(entry_name)
+        let (do) = actions.read(do_name)
+        let (exit) = actions.read(exit_name)
+
         let state = State(entry=entry, do=do, exit=exit)
-        states.write(name, state)
+        states.write(curr, state)
+
+        states_inc.write(curr + 1)
         ret
     end
 
@@ -219,6 +225,14 @@ namespace internal_utils:
         let (action) = actions.read(name)
         with_attr error_message("This action doesn't exist"):
             assert_not_zero(action.name)
+        end
+        ret
+    end
+
+    func check_action_is_internal {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
+        let (action) = actions.read(name)
+        with_attr error_message("This action is external"):
+            assert action.external = 0
         end
         ret
     end
