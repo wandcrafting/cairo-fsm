@@ -14,13 +14,13 @@ struct Action:
 end
 
 struct State:
-    member entry : Action
-    member do : Action
-    member exit : Action
+    member entry : felt
+    member do : felt
+    member exit : felt
 end
 
 struct Transition:
-    member action : Action
+    member action : felt
     member condition : felt # if 1, this transition is enabled. if 0, this transition is disabled.
 end
 
@@ -58,7 +58,7 @@ end
 
 #event can be an external action (give a name, and external bool = 0), or entry/do/exit action, or a transition action
 @storage_var
-func transitions(from_name : felt, to_name : felt, event : Action) -> (transition : Transition):
+func transitions(from_name : felt, to_name : felt, event : felt) -> (transition : Transition):
 end
 
 ################################################################################
@@ -122,11 +122,7 @@ namespace states_storage:
         internal_utils.check_action_existence(do_name)
         internal_utils.check_action_existence(exit_name)
 
-        let (entry) = actions.read(entry_name)
-        let (do) = actions.read(do_name)
-        let (exit) = actions.read(exit_name)
-
-        let state = State(entry=entry, do=do, exit=exit)
+        let state = State(entry=entry_name, do=do_name, exit=exit_name)
         states.write(curr, state)
 
         states_inc.write(curr + 1)
@@ -142,9 +138,7 @@ namespace states_storage:
         let do = actions.do
         let exit = actions.exit
 
-        let (entry) = actions.read(entry_name)
-
-        let state = State(entry=entry, do=do, exit=exit)
+        let state = State(entry=entry_name, do=do, exit=exit)
         states.write(name, state)
         ret
     end
@@ -158,9 +152,7 @@ namespace states_storage:
         let entry = actions.entry
         let exit = actions.exit
 
-        let (do) = actions.read(do_name)
-
-        let state = State(entry=entry, do=do, exit=exit)
+        let state = State(entry=entry, do=do_name, exit=exit)
         states.write(name, state)
         ret
     end
@@ -174,9 +166,7 @@ namespace states_storage:
         let entry = actions.entry
         let do = actions.do
 
-        let (exit) = actions.read(exit_name)
-
-        let state = State(entry=entry, do=do, exit=exit)
+        let state = State(entry=entry, do=do, exit=exit_name)
         states.write(name, state)
         ret
     end
