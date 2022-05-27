@@ -193,8 +193,9 @@ end
 namespace internal_utils:
     func check_state_non_existence {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
         let (state) = states.read(name)
+        let (do_action) = actions_storage.get_action(state.do)
         with_attr error_message("This state already exists"):
-            assert state.do.name = 0
+            assert do_action = 0
         end
         ret
     end
@@ -248,6 +249,13 @@ namespace internal_utils:
             assert_not_zero(trans.action)
         end
         ret
+    end
+
+    func check_from_is_curr {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_state : felt):
+        let (curr) = states_config.get_curr_state()
+        with_attr error_message("curr is not from_state"):
+            assert curr = from_state
+        end
     end
 end
 
@@ -368,26 +376,17 @@ end
 #figure out conditions/guards
 
 
-
-
-
-
-
-
-
-
-
-
-
-func execute_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : Action):
-    let (curr) = current_state.read()
-    if from_name == curr:
-        let (transition) = transitions.read(from_name, to_name, event)
-        #TODO: check that transition exists
-        let (_, _, exit) = get_state_actions(curr)
-        let (entry, _, _) = get_state_actions(curr)
-        #TODO: emit that action events were executed - exit, transition.action, entry
-        current_state.write(to_name)
-        end
+@external
+func execute_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : felt):
+    internal_utils.check_transition_existence(from_name, to_name, event)
+    let (curr) = states_config.get_curr_state()
+    internal_utils.check_from_is_curr(from_name)
+    
+    let (transition) = transitions.read(from_name, to_name, event)
+    #TODO: check that transition exists
+    let (_, _, exit) = get_state_actions(curr)
+    let (entry, _, _) = get_state_actions(curr)
+    #TODO: emit that action events were executed - exit, transition.action, entry
+    current_state.write(to_name)
     ret
 end
