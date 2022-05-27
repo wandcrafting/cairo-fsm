@@ -202,8 +202,9 @@ namespace internal_utils:
 
     func check_state_existence {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name : felt) -> ():
         let (state) = states.read(name)
+        let (do_action) = actions_storage.get_action(state.do)
         with_attr error_message("This state doesn't exist"):
-            assert_not_zero(state.do.name)
+            assert_not_zero(do_action)
         end
         ret
     end
