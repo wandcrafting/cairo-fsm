@@ -372,22 +372,16 @@ namespace transition_storage:
     end
 end
 
-
-
-#figure out conditions/guards
-
-
 @external
-func execute_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : felt):
+func execute_transition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(from_name : felt, to_name : felt, event : felt) -> (entry : Action, transition : Action, exit : Action):
     internal_utils.check_transition_existence(from_name, to_name, event)
     let (curr) = states_config.get_curr_state()
     internal_utils.check_from_is_curr(from_name)
     
-    let (transition) = transitions.read(from_name, to_name, event)
-    #TODO: check that transition exists
-    let (_, _, exit) = get_state_actions(curr)
-    let (entry, _, _) = get_state_actions(curr)
-    #TODO: emit that action events were executed - exit, transition.action, entry
-    current_state.write(to_name)
+    let (exit) = get_actions.get_state_action_exit(from_name)
+    let (transition) = get_actions.get_transition_action(from_name, to_name, event)
+    let (entry) = get_actions.get_state_action_entry(to_name)
+
+    states_config.set_curr_state(to_name)
     ret
 end
