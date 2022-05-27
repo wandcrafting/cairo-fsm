@@ -117,7 +117,9 @@ end
 namespace states_storage:
     @external
     func add_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(entry_name : felt, do_name : felt, exit_name : felt) -> ():
-        let (curr) = states_inc.read()
+        alloc_locals
+        let (local curr) = states_inc.read()
+        
         internal_utils.check_action_existence(entry_name)
         internal_utils.check_action_existence(do_name)
         internal_utils.check_action_existence(exit_name)
